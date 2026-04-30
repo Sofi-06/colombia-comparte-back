@@ -12,4 +12,11 @@ router.get(
   adminController.getAdminPanel
 );
 
+router.get(
+  '/dashboard',
+  verifyToken,
+  authorizeRoles('superadmin', 'admin_pais', 'editor'),
+  adminController.getDashboard
+);
+
 module.exports = router;

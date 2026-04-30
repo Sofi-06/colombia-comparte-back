@@ -2,6 +2,22 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authRepository = require('../repositories/authRepository');
 
+const resolveRedirectPath = (rol, paisSlug) => {
+  if (rol === 'superadmin') {
+    return '/admin/dashboard/global';
+  }
+
+  if (rol === 'admin_pais') {
+    return `/admin/dashboard/${paisSlug || 'pais'}`;
+  }
+
+  if (rol === 'editor') {
+    return `/admin/editor/${paisSlug || 'pais'}`;
+  }
+
+  return '/';
+};
+
 const login = async ({ username, password }) => {
   if (!username || !password) {
     throw new Error('El usuario y la contraseña son obligatorios');
@@ -27,6 +43,8 @@ const login = async ({ username, password }) => {
 
   const rol = user.roles?.nombre;
   const pais = user.paises || null;
+  const paisSlug = pais?.slug || null;
+  const redirect_to = resolveRedirectPath(rol, paisSlug);
 
   const token = jwt.sign(
     {
@@ -35,6 +53,8 @@ const login = async ({ username, password }) => {
       email: user.email,
       rol,
       pais_id: user.pais_id,
+      pais_slug: paisSlug,
+      pais_nombre: pais?.nombre || null,
     },
     process.env.JWT_SECRET,
     { expiresIn: '2h' }
@@ -50,8 +70,16 @@ const login = async ({ username, password }) => {
       email: user.email,
       username: user.username,
       rol,
+      pais_id: user.pais_id,
       pais,
     },
+    session: {
+      rol,
+      pais_id: user.pais_id,
+      pais_slug: paisSlug,
+      redirect_to,
+    },
+    redirect_to,
   };
 };
 
