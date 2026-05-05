@@ -1,0 +1,416 @@
+{
+  "info": {
+    "name": "Colombia Comparte - API CMS",
+    "description": "Coleccion de endpoints para el CMS multipais con login JWT y proteccion de rutas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "countrySlug",
+      "value": "colombia"
+    },
+    {
+      "key": "newsSlug",
+      "value": "ejemplo"
+    },
+    {
+      "key": "id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "🟢 Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/"
+      }
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "🔐 Login correcto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"superadmin\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "👤 Get Profile (me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/profile/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "⚙️ Get Admin Panel",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/panel"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "👥 List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/users/"
+          }
+        },
+        {
+          "name": "➕ Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"nuevo_usuario\",\n  \"password\": \"123456\",\n  \"role\": \"editor\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Countries",
+      "item": [
+        {
+          "name": "🌎 List All Countries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/countries/"
+          }
+        },
+        {
+          "name": "🌍 List Active Countries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/countries/active"
+          }
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "item": [
+        {
+          "name": "📰 Public - List News by Country",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/news/public/{{countrySlug}}"
+          }
+        },
+        {
+          "name": "📰 Public - Get News Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/news/public/{{countrySlug}}/{{newsSlug}}"
+          }
+        },
+        {
+          "name": "📋 Admin - List News",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/news/"
+          }
+        },
+        {
+          "name": "➕ Admin - Create News",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nueva Noticia\",\n  \"content\": \"Contenido...\",\n  \"country_id\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/news/"
+          }
+        },
+        {
+          "name": "✏️ Admin - Update News",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Noticia Actualizada\"\n}"
+            },
+            "url": "{{baseUrl}}/api/news/{{id}}"
+          }
+        },
+        {
+          "name": "🗑️ Admin - Delete News",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/news/{{id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Testimonials",
+      "item": [
+        {
+          "name": "💬 Public - List Testimonials by Country",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/testimonials/public/{{countrySlug}}"
+          }
+        },
+        {
+          "name": "📋 Admin - List Testimonials",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/testimonials/"
+          }
+        },
+        {
+          "name": "➕ Admin - Create Testimonial",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"author\": \"Juan Pérez\",\n  \"content\": \"Excelente servicio\",\n  \"country_id\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/testimonials/"
+          }
+        },
+        {
+          "name": "✏️ Admin - Update Testimonial",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Excelente servicio actualizado\"\n}"
+            },
+            "url": "{{baseUrl}}/api/testimonials/{{id}}"
+          }
+        },
+        {
+          "name": "🗑️ Admin - Delete Testimonial",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/testimonials/{{id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contact Requests",
+      "item": [
+        {
+          "name": "✉️ Public - Create Contact Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Maria Gomez\",\n  \"email\": \"maria@example.com\",\n  \"message\": \"Quiero más información.\",\n  \"country_id\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/contact-requests/public"
+          }
+        },
+        {
+          "name": "📋 Admin - List Contact Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/contact-requests/"
+          }
+        },
+        {
+          "name": "🔄 Admin - Update Contact Request Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"resolved\"\n}"
+            },
+            "url": "{{baseUrl}}/api/contact-requests/{{id}}/status"
+          }
+        },
+        {
+          "name": "🗑️ Admin - Delete Contact Request",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/contact-requests/{{id}}"
+          }
+        }
+      ]
+    }
+  ]
+}
