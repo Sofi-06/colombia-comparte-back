@@ -61,8 +61,44 @@ const createUser = async (payload) => {
   return data;
 };
 
+const updateUser = async (id, payload) => {
+  const { data, error } = await supabase
+    .from('usuarios')
+    .update(payload)
+    .eq('id', id)
+    .select(`
+      id,
+      nombre,
+      apellido,
+      email,
+      username,
+      estado,
+      created_at
+    `)
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
+const deleteUser = async (id) => {
+  const { data, error } = await supabase
+    .from('usuarios')
+    .delete()
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
 module.exports = {
   findAllUsers,
   findUserByUsernameOrEmail,
   createUser,
+  updateUser,
+  deleteUser,
 };

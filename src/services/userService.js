@@ -40,7 +40,21 @@ const createUser = async (payload) => {
   });
 };
 
+const updateUser = async (id, payload) => {
+  if (payload.password) {
+    payload.password_hash = bcrypt.hashSync(payload.password, 10);
+    delete payload.password;
+  }
+  return await userRepository.updateUser(id, payload);
+};
+
+const deleteUser = async (id) => {
+  return await userRepository.deleteUser(id);
+};
+
 module.exports = {
   getUsers,
   createUser,
+  updateUser,
+  deleteUser,
 };

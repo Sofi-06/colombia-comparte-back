@@ -138,9 +138,43 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"nuevo_usuario\",\n  \"password\": \"123456\",\n  \"role\": \"editor\"\n}"
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Perez\",\n  \"email\": \"juan.perez@cms.com\",\n  \"username\": \"juanperez\",\n  \"password\": \"MiPasswordSeguro123\",\n  \"rol_id\": 2,\n  \"pais_id\": 1\n}"
             },
             "url": "{{baseUrl}}/api/users/"
+          }
+        },
+        {
+          "name": "✏️ Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan Actualizado\",\n  \"apellido\": \"Perez Actualizado\",\n  \"email\": \"juan.nuevo@cms.com\",\n  \"username\": \"juanperez_mod\",\n  \"password\": \"NuevoPassword123\",\n  \"rol_id\": 1,\n  \"pais_id\": 2,\n  \"estado\": \"inactivo\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/2"
+          }
+        },
+        {
+          "name": "🗑️ Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/users/2"
           }
         }
       ]
