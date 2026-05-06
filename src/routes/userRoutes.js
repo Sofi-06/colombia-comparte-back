@@ -19,4 +19,18 @@ router.post(
   userController.createUser
 );
 
+router.patch(
+  '/:id',
+  verifyToken,
+  authorizeRoles('superadmin'),
+  userController.updateUser
+);
+
+router.delete(
+  '/:id',
+  verifyToken,
+  authorizeRoles('superadmin'),
+  userController.deleteUser
+);
+
 module.exports = router;
