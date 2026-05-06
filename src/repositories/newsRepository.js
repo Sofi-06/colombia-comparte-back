@@ -70,7 +70,32 @@ const findNewsByCountry = async (paisId) => {
 const findNewsById = async (id) => {
   const { data, error } = await supabase
     .from('noticias')
-    .select('*')
+    .select(`
+      id,
+      pais_id,
+      titulo,
+      slug,
+      resumen,
+      contenido,
+      imagen_principal_url,
+      autor_id,
+      estado,
+      fecha_publicacion,
+      created_at,
+      updated_at,
+      paises (
+        id,
+        nombre,
+        codigo,
+        slug
+      ),
+      usuarios (
+        id,
+        nombre,
+        apellido,
+        email
+      )
+    `)
     .eq('id', id)
     .maybeSingle();
 
@@ -163,6 +188,19 @@ const updateNews = async (id, payload) => {
   return data;
 };
 
+const updateNewsStatus = async (id, payload) => {
+  const { data, error } = await supabase
+    .from('noticias')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
 const deleteNews = async (id) => {
   const { error } = await supabase
     .from('noticias')
@@ -180,5 +218,6 @@ module.exports = {
   findPublishedNewsDetailByCountryAndSlug,
   createNews,
   updateNews,
+  updateNewsStatus,
   deleteNews,
 };

@@ -26,6 +26,26 @@ const listPublicNews = async (req, res) => {
   }
 };
 
+const getNewsById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const news = await newsService.getNewsDetail(id, req.user);
+
+    return res.status(200).json(news);
+  } catch (error) {
+    if (error.message.includes('permisos')) {
+      return res.status(403).json({
+        message: error.message,
+      });
+    }
+
+    return res.status(404).json({
+      message: error.message,
+    });
+  }
+};
+
 const getPublicNewsDetail = async (req, res) => {
   try {
     const { countrySlug, newsSlug } = req.params;
@@ -72,6 +92,28 @@ const updateNews = async (req, res) => {
   }
 };
 
+const changeNewsStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const news = await newsService.changeNewsStatus(id, req.body, req.user);
+
+    return res.status(200).json({
+      message: 'Estado de la noticia actualizado correctamente',
+      data: news,
+    });
+  } catch (error) {
+    const statusCode =
+      error.message.includes('permisos') ? 403 :
+      error.message.includes('Estado no válido') || error.message.includes('obligatorio') ? 400 :
+      400;
+
+    return res.status(statusCode).json({
+      message: error.message,
+    });
+  }
+};
+
 const deleteNews = async (req, res) => {
   try {
     const { id } = req.params;
@@ -89,8 +131,10 @@ const deleteNews = async (req, res) => {
 module.exports = {
   listNews,
   listPublicNews,
+  getNewsById,
   getPublicNewsDetail,
   createNews,
   updateNews,
+  changeNewsStatus,
   deleteNews,
 };

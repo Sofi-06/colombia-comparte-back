@@ -12,6 +12,18 @@ const generateSlug = (text) => {
     .replace(/-+/g, '-');
 };
 
+const normalizeNewsPayload = (payload) => {
+  return {
+    titulo: payload.titulo ?? payload.title,
+    resumen: payload.resumen ?? payload.summary,
+    contenido: payload.contenido ?? payload.content,
+    imagen_principal_url:
+      payload.imagen_principal_url ?? payload.image_url ?? payload.imageUrl,
+    estado: payload.estado ?? payload.status,
+    pais_id: payload.pais_id ?? payload.country_id,
+  };
+};
+
 const getNews = async (user) => {
   if (user.rol === 'superadmin') {
     return await newsRepository.findAllNews();
@@ -45,6 +57,23 @@ const getPublicNewsDetail = async (countrySlug, newsSlug) => {
   return news;
 };
 
+const getNewsDetail = async (id, user) => {
+  const news = await newsRepository.findNewsById(id);
+
+  if (!news) {
+    throw new Error('La noticia no existe');
+  }
+
+  if (
+    user.rol !== 'superadmin' &&
+    Number(news.pais_id) !== Number(user.pais_id)
+  ) {
+    throw new Error('No tiene permisos para ver esta noticia');
+  }
+
+  return news;
+};
+
 const createNews = async (payload, user) => {
   const {
     titulo,
@@ -53,7 +82,7 @@ const createNews = async (payload, user) => {
     imagen_principal_url,
     estado = 'borrador',
     pais_id,
-  } = payload;
+  } = normalizeNewsPayload(payload);
 
   if (!titulo || !resumen || !contenido) {
     throw new Error('Título, resumen y contenido son obligatorios');
@@ -111,29 +140,78 @@ const updateNews = async (id, payload, user) => {
     'estado',
   ];
 
+  const normalizedPayload = normalizeNewsPayload(payload);
+
   const updatePayload = {};
 
   allowedFields.forEach((field) => {
-    if (payload[field] !== undefined) {
-      updatePayload[field] = payload[field];
+    if (normalizedPayload[field] !== undefined) {
+      updatePayload[field] = normalizedPayload[field];
     }
   });
 
-  if (payload.titulo) {
-    updatePayload.slug = generateSlug(payload.titulo);
+  if (normalizedPayload.titulo) {
+    updatePayload.slug = generateSlug(normalizedPayload.titulo);
   }
 
-  if (payload.estado === 'publicado' && existingNews.estado !== 'publicado') {
+  if (
+    normalizedPayload.estado === 'publicado' &&
+    existingNews.estado !== 'publicado'
+  ) {
     updatePayload.fecha_publicacion = new Date().toISOString();
   }
 
-  if (payload.estado && payload.estado !== 'publicado') {
+  if (normalizedPayload.estado && normalizedPayload.estado !== 'publicado') {
     updatePayload.fecha_publicacion = null;
   }
 
   updatePayload.updated_at = new Date().toISOString();
 
   return await newsRepository.updateNews(id, updatePayload);
+};
+
+const changeNewsStatus = async (id, payload, user) => {
+  const existingNews = await newsRepository.findNewsById(id);
+
+  if (!existingNews) {
+    throw new Error('La noticia no existe');
+  }
+
+  if (
+    user.rol !== 'superadmin' &&
+    Number(existingNews.pais_id) !== Number(user.pais_id)
+  ) {
+    throw new Error('No tiene permisos para cambiar el estado de esta noticia');
+  }
+
+  if (user.rol === 'editor' && payload.estado === 'despublicado') {
+    throw new Error('El editor no tiene permisos para despublicar noticias');
+  }
+
+  const estado = payload.estado ?? payload.status;
+
+  if (!estado) {
+    throw new Error('El estado es obligatorio');
+  }
+
+  if (!['borrador', 'publicado', 'despublicado'].includes(estado)) {
+    throw new Error('Estado no válido');
+  }
+
+  const updatePayload = {
+    estado,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (estado === 'publicado' && existingNews.estado !== 'publicado') {
+    updatePayload.fecha_publicacion = new Date().toISOString();
+  }
+
+  if (estado !== 'publicado') {
+    updatePayload.fecha_publicacion = null;
+  }
+
+  return await newsRepository.updateNewsStatus(id, updatePayload);
 };
 
 const deleteNews = async (id, user) => {
@@ -165,7 +243,9 @@ module.exports = {
   getNews,
   getPublicNewsByCountry,
   getPublicNewsDetail,
+  getNewsDetail,
   createNews,
   updateNews,
+  changeNewsStatus,
   deleteNews,
 };

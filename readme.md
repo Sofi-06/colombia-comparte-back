@@ -433,7 +433,15 @@ GET http://localhost:3001/api/news
 5. Eliminar noticia:
 - DELETE http://localhost:3001/api/news/1
 
-6. Endpoint PÚBLICO para ver las noticias publicadas
+6. Cambiar estado de noticia:
+- PATCH http://localhost:3001/api/news/1/estado
+
+- Body:
+{
+  "estado": "publicado"
+}
+
+7. Endpoint PÚBLICO para ver las noticias publicadas
 
 GET /api/public/news/:countrySlug
 + NO requiere login
