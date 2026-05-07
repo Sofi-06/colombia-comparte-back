@@ -283,6 +283,27 @@
           }
         },
         {
+          "name": "🔁 Admin - Change News Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"publicado\"\n}"
+            },
+            "url": "{{baseUrl}}/api/news/{{id}}/estado"
+          }
+        },
+        {
           "name": "🗑️ Admin - Delete News",
           "request": {
             "method": "DELETE",
