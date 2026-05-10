@@ -76,10 +76,68 @@ const deleteTestimonial = async (req, res) => {
   }
 };
 
+const getTestimonialById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const testimonial = await testimonialService.getTestimonialDetail(id, req.user);
+
+    return res.status(200).json(testimonial);
+  } catch (error) {
+    if (error.message.includes('permisos')) {
+      return res.status(403).json({
+        message: error.message,
+      });
+    }
+
+    return res.status(404).json({
+      message: error.message,
+    });
+  }
+};
+
+const getPublicTestimonialDetail = async (req, res) => {
+  try {
+    const { countrySlug, testimonialSlug } = req.params;
+
+    const testimonial = await testimonialService.getPublicTestimonialDetail(countrySlug, testimonialSlug);
+
+    return res.status(200).json(testimonial);
+  } catch (error) {
+    return res.status(404).json({
+      message: error.message,
+    });
+  }
+};
+
+const changeTestimonialStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const testimonial = await testimonialService.changeTestimonialStatus(id, req.body, req.user);
+
+    return res.status(200).json({
+      message: 'Estado del testimonio actualizado correctamente',
+      data: testimonial,
+    });
+  } catch (error) {
+    const statusCode =
+      error.message.includes('permisos') ? 403 :
+      error.message.includes('Estado no válido') || error.message.includes('obligatorio') ? 400 :
+      400;
+
+    return res.status(statusCode).json({
+      message: error.message,
+    });
+  }
+};
 module.exports = {
   listTestimonials,
   listPublicTestimonials,
   createTestimonial,
   updateTestimonial,
   deleteTestimonial,
+  getTestimonialById,
+  getPublicTestimonialDetail,
+  changeTestimonialStatus,
 };

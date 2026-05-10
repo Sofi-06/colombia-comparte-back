@@ -116,6 +116,43 @@ const findPublishedTestimonialsByCountrySlug = async (countrySlug) => {
   return data;
 };
 
+const findPublishedTestimonialDetailByCountryAndSlug = async (countrySlug, testimonialSlug) => {
+  const { data, error } = await supabase
+    .from('testimonios')
+    .select(`
+      id,
+      nombre,
+      slug,
+      cargo,
+      empresa,
+      contenido,
+      foto_url,
+      instagram_url,
+      facebook_url,
+      destacado,
+      fecha_publicacion,
+      paises!inner (
+        id,
+        nombre,
+        codigo,
+        slug
+      ),
+      usuarios (
+        id,
+        nombre,
+        apellido
+      )
+    `)
+    .eq('estado', 'publicado')
+    .eq('paises.slug', countrySlug)
+    .eq('slug', testimonialSlug)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
 const createTestimonial = async (payload) => {
   const { data, error } = await supabase
     .from('testimonios')
@@ -129,6 +166,19 @@ const createTestimonial = async (payload) => {
 };
 
 const updateTestimonial = async (id, payload) => {
+  const { data, error } = await supabase
+    .from('testimonios')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
+const updateTestimonialStatus = async (id, payload) => {
   const { data, error } = await supabase
     .from('testimonios')
     .update(payload)
@@ -155,7 +205,9 @@ module.exports = {
   findTestimonialsByCountry,
   findTestimonialById,
   findPublishedTestimonialsByCountrySlug,
+  findPublishedTestimonialDetailByCountryAndSlug,
   createTestimonial,
   updateTestimonial,
+  updateTestimonialStatus,
   deleteTestimonial,
 };
