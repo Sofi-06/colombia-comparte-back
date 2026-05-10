@@ -1,17 +1,5 @@
 const testimonialRepository = require('../repositories/testimonialRepository');
 
-const generateSlug = (text) => {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
-};
-
 const getTestimonials = async (user) => {
   if (user.rol === 'superadmin') {
     return await testimonialRepository.findAllTestimonials();
@@ -61,12 +49,9 @@ const createTestimonial = async (payload, user) => {
   const fecha_publicacion =
     finalEstado === 'publicado' ? new Date().toISOString() : null;
 
-  const slug = generateSlug(nombre);
-
   return await testimonialRepository.createTestimonial({
     pais_id: finalPaisId,
     nombre,
-    slug,
     cargo: cargo || null,
     empresa: empresa || null,
     contenido,
@@ -95,6 +80,7 @@ const updateTestimonial = async (id, payload, user) => {
   }
 
   const allowedFields = [
+    'pais_id',
     'nombre',
     'cargo',
     'empresa',
@@ -114,6 +100,10 @@ const updateTestimonial = async (id, payload, user) => {
     }
   });
 
+  if (user.rol !== 'superadmin') {
+    delete updatePayload.pais_id;
+  }
+
   if (
     payload.estado === 'publicado' &&
     existingTestimonial.estado !== 'publicado'
@@ -126,11 +116,6 @@ const updateTestimonial = async (id, payload, user) => {
   }
 
   updatePayload.updated_at = new Date().toISOString();
-
-  if (payload.nombre) {
-    updatePayload.slug = generateSlug(payload.nombre);
-  }
-
   return await testimonialRepository.updateTestimonial(id, updatePayload);
 };
 
