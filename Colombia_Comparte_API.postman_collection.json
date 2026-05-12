@@ -413,7 +413,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Maria Gomez\",\n  \"email\": \"maria@example.com\",\n  \"message\": \"Quiero más información.\",\n  \"country_id\": 1\n}"
+              "raw": "{\n  \"pais_id\": 1,\n  \"nombre\": \"Maria Gomez\",\n  \"correo\": \"maria@example.com\",\n  \"telefono\": \"3001234567\",\n  \"finalidad\": \"Servicio\",\n  \"mensaje\": \"Quiero más información.\"\n}"
             },
             "url": "{{baseUrl}}/api/contact-requests/public"
           }
@@ -432,6 +432,40 @@
           }
         },
         {
+          "name": "🔎 Admin - Get Contact Request Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/contact-requests/{{id}}"
+          }
+        },
+        {
+          "name": "✏️ Admin - Update Contact Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Maria Gomez\",\n  \"correo\": \"maria.nuevo@example.com\",\n  \"telefono\": \"3007654321\",\n  \"finalidad\": \"Servicio\",\n  \"mensaje\": \"Actualicé mis datos de contacto.\",\n  \"estado\": \"en_proceso\",\n  \"observaciones_admin\": \"Se contactará por correo.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/contact-requests/{{id}}"
+          }
+        },
+        {
           "name": "🔄 Admin - Update Contact Request Status",
           "request": {
             "method": "PUT",
@@ -447,7 +481,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"resolved\"\n}"
+              "raw": "{\n  \"estado\": \"gestionada\",\n  \"observaciones_admin\": \"Solicitud respondida por correo electrónico.\"\n}"
             },
             "url": "{{baseUrl}}/api/contact-requests/{{id}}/status"
           }
