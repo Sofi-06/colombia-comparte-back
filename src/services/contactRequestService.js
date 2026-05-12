@@ -1,5 +1,8 @@
 const contactRequestRepository = require('../repositories/contactRequestRepository');
 
+const ALLOWED_PURPOSES = ['Servicio', 'Programa EDIFICA', 'Shows y conferencias'];
+const ALLOWED_STATES = ['pendiente', 'en_proceso', 'gestionada', 'cerrada'];
+
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
@@ -16,6 +19,14 @@ const normalizeRequestPayload = (payload) => {
     observaciones_admin:
       payload.observaciones_admin ?? payload.admin_notes,
   };
+};
+
+const validatePurpose = (finalidad) => {
+  if (!ALLOWED_PURPOSES.includes(finalidad)) {
+    throw new Error(
+      `La finalidad debe ser una de estas opciones: ${ALLOWED_PURPOSES.join(', ')}`
+    );
+  }
 };
 
 const getRequests = async (user) => {
@@ -37,12 +48,14 @@ const createPublicRequest = async (payload) => {
   } = normalizeRequestPayload(payload);
 
   if (!pais_id || !nombre || !correo || !telefono || !finalidad) {
-    throw new Error('País, nombre, correo, teléfono y finalidad son obligatorios');
+    throw new Error('PaÃ­s, nombre, correo, telÃ©fono y finalidad son obligatorios');
   }
 
   if (!isValidEmail(correo)) {
-    throw new Error('El correo electrónico no tiene un formato válido');
+    throw new Error('El correo electrÃ³nico no tiene un formato vÃ¡lido');
   }
+
+  validatePurpose(finalidad);
 
   return await contactRequestRepository.createRequest({
     pais_id,
@@ -88,10 +101,8 @@ const updateRequestStatus = async (id, payload, user) => {
 
   const { estado, observaciones_admin } = payload;
 
-  const allowedStates = ['pendiente', 'en_proceso', 'gestionada', 'cerrada'];
-
-  if (!estado || !allowedStates.includes(estado)) {
-    throw new Error('Estado no válido');
+  if (!estado || !ALLOWED_STATES.includes(estado)) {
+    throw new Error('Estado no vÃ¡lido');
   }
 
   const updatePayload = {
@@ -134,14 +145,16 @@ const updateRequest = async (id, payload, user) => {
   );
 
   if (normalizedPayload.correo && !isValidEmail(normalizedPayload.correo)) {
-    throw new Error('El correo electrónico no tiene un formato válido');
+    throw new Error('El correo electrÃ³nico no tiene un formato vÃ¡lido');
+  }
+
+  if (normalizedPayload.finalidad !== undefined) {
+    validatePurpose(normalizedPayload.finalidad);
   }
 
   if (normalizedPayload.estado) {
-    const allowedStates = ['pendiente', 'en_proceso', 'gestionada', 'cerrada'];
-
-    if (!allowedStates.includes(normalizedPayload.estado)) {
-      throw new Error('Estado no válido');
+    if (!ALLOWED_STATES.includes(normalizedPayload.estado)) {
+      throw new Error('Estado no vÃ¡lido');
     }
 
     updatePayload.estado = normalizedPayload.estado;
