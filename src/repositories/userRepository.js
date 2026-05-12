@@ -41,6 +41,30 @@ const findUserByUsernameOrEmail = async (username, email) => {
   return data;
 };
 
+const findUserById = async (id) => {
+  const { data, error } = await supabase
+    .from('usuarios')
+    .select(`
+      id,
+      nombre,
+      apellido,
+      email,
+      username,
+      estado,
+      pregunta_seguridad,
+      roles (
+        id,
+        nombre
+      )
+    `)
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
 const createUser = async (payload) => {
   const { data, error } = await supabase
     .from('usuarios')
@@ -82,6 +106,35 @@ const updateUser = async (id, payload) => {
   return data;
 };
 
+const updateUserPassword = async (id, password_hash) => {
+  const { data, error } = await supabase
+    .from('usuarios')
+    .update({
+      password_hash,
+      password_updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select('id, username')
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
+const updateSecurityQuestion = async (id, payload) => {
+  const { data, error } = await supabase
+    .from('usuarios')
+    .update(payload)
+    .eq('id', id)
+    .select('id, username, pregunta_seguridad')
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
 const deleteUser = async (id) => {
   const { data, error } = await supabase
     .from('usuarios')
@@ -98,7 +151,10 @@ const deleteUser = async (id) => {
 module.exports = {
   findAllUsers,
   findUserByUsernameOrEmail,
+  findUserById,
   createUser,
   updateUser,
+  updateUserPassword,
+  updateSecurityQuestion,
   deleteUser,
 };

@@ -6,6 +6,8 @@ const createSuperAdmin = async () => {
     const username = 'superadmin';
     const password = '123456'; // puedes cambiarlo
     const email = 'admin@cms.com';
+    const pregunta_seguridad = '¿Cuál es el código inicial del sistema?';
+    const respuesta_seguridad = 'cms2026';
 
     console.log('🔎 Verificando si ya existe el usuario...');
 
@@ -22,6 +24,7 @@ const createSuperAdmin = async () => {
 
     console.log('🔐 Generando hash de contraseña...');
     const password_hash = bcrypt.hashSync(password, 10);
+    const respuesta_seguridad_hash = bcrypt.hashSync(respuesta_seguridad, 10);
 
     console.log('🔎 Buscando rol superadmin...');
 
@@ -46,6 +49,8 @@ const createSuperAdmin = async () => {
           email,
           username,
           password_hash,
+          pregunta_seguridad,
+          respuesta_seguridad_hash,
           rol_id: role.id,
           pais_id: null,
           estado: 'activo',
@@ -59,6 +64,7 @@ const createSuperAdmin = async () => {
     console.log('✅ Superadmin creado correctamente');
     console.log('👤 Usuario:', username);
     console.log('🔑 Password:', password);
+    console.log('🛡️ Pregunta de seguridad:', pregunta_seguridad);
   } catch (error) {
     console.error('❌ Error:', error.message);
   }
