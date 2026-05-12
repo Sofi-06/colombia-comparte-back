@@ -97,6 +97,44 @@ const findRequestById = async (id) => {
   return data;
 };
 
+const findRequestDetailById = async (id) => {
+  const { data, error } = await supabase
+    .from('solicitudes_contacto')
+    .select(`
+      id,
+      pais_id,
+      nombre,
+      correo,
+      telefono,
+      finalidad,
+      mensaje,
+      estado,
+      observaciones_admin,
+      fecha_gestion,
+      gestionado_por,
+      created_at,
+      updated_at,
+      paises (
+        id,
+        nombre,
+        codigo,
+        slug
+      ),
+      usuarios (
+        id,
+        nombre,
+        apellido,
+        email
+      )
+    `)
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
 const createRequest = async (payload) => {
   const { data, error } = await supabase
     .from('solicitudes_contacto')
@@ -135,6 +173,7 @@ module.exports = {
   findAllRequests,
   findRequestsByCountry,
   findRequestById,
+  findRequestDetailById,
   createRequest,
   updateRequest,
   deleteRequest,

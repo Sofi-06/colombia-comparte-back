@@ -4,6 +4,20 @@ const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
+const normalizeRequestPayload = (payload) => {
+  return {
+    pais_id: payload.pais_id ?? payload.country_id,
+    nombre: payload.nombre ?? payload.name,
+    correo: payload.correo ?? payload.email,
+    telefono: payload.telefono ?? payload.phone,
+    finalidad: payload.finalidad ?? payload.purpose,
+    mensaje: payload.mensaje ?? payload.message,
+    estado: payload.estado ?? payload.status,
+    observaciones_admin:
+      payload.observaciones_admin ?? payload.admin_notes,
+  };
+};
+
 const getRequests = async (user) => {
   if (user.rol === 'superadmin') {
     return await contactRequestRepository.findAllRequests();
@@ -20,7 +34,7 @@ const createPublicRequest = async (payload) => {
     telefono,
     finalidad,
     mensaje,
-  } = payload;
+  } = normalizeRequestPayload(payload);
 
   if (!pais_id || !nombre || !correo || !telefono || !finalidad) {
     throw new Error('País, nombre, correo, teléfono y finalidad son obligatorios');
@@ -39,6 +53,23 @@ const createPublicRequest = async (payload) => {
     mensaje: mensaje || null,
     estado: 'pendiente',
   });
+};
+
+const getRequestById = async (id, user) => {
+  const existingRequest = await contactRequestRepository.findRequestDetailById(id);
+
+  if (!existingRequest) {
+    throw new Error('La solicitud no existe');
+  }
+
+  if (
+    user.rol !== 'superadmin' &&
+    Number(existingRequest.pais_id) !== Number(user.pais_id)
+  ) {
+    throw new Error('No tiene permisos para ver esta solicitud');
+  }
+
+  return existingRequest;
 };
 
 const updateRequestStatus = async (id, payload, user) => {
@@ -77,6 +108,58 @@ const updateRequestStatus = async (id, payload, user) => {
   return await contactRequestRepository.updateRequest(id, updatePayload);
 };
 
+const updateRequest = async (id, payload, user) => {
+  const existingRequest = await contactRequestRepository.findRequestById(id);
+
+  if (!existingRequest) {
+    throw new Error('La solicitud no existe');
+  }
+
+  if (
+    user.rol !== 'superadmin' &&
+    Number(existingRequest.pais_id) !== Number(user.pais_id)
+  ) {
+    throw new Error('No tiene permisos para modificar esta solicitud');
+  }
+
+  const normalizedPayload = normalizeRequestPayload(payload);
+  const updatePayload = {};
+
+  ['pais_id', 'nombre', 'correo', 'telefono', 'finalidad', 'mensaje'].forEach(
+    (field) => {
+      if (normalizedPayload[field] !== undefined) {
+        updatePayload[field] = normalizedPayload[field];
+      }
+    }
+  );
+
+  if (normalizedPayload.correo && !isValidEmail(normalizedPayload.correo)) {
+    throw new Error('El correo electrónico no tiene un formato válido');
+  }
+
+  if (normalizedPayload.estado) {
+    const allowedStates = ['pendiente', 'en_proceso', 'gestionada', 'cerrada'];
+
+    if (!allowedStates.includes(normalizedPayload.estado)) {
+      throw new Error('Estado no válido');
+    }
+
+    updatePayload.estado = normalizedPayload.estado;
+
+    if (normalizedPayload.estado === 'gestionada' || normalizedPayload.estado === 'cerrada') {
+      updatePayload.fecha_gestion = new Date().toISOString();
+    }
+  }
+
+  if (normalizedPayload.observaciones_admin !== undefined) {
+    updatePayload.observaciones_admin = normalizedPayload.observaciones_admin;
+  }
+
+  updatePayload.updated_at = new Date().toISOString();
+
+  return await contactRequestRepository.updateRequest(id, updatePayload);
+};
+
 const deleteRequest = async (id, user) => {
   const existingRequest = await contactRequestRepository.findRequestById(id);
 
@@ -105,6 +188,8 @@ const deleteRequest = async (id, user) => {
 module.exports = {
   getRequests,
   createPublicRequest,
+  getRequestById,
   updateRequestStatus,
+  updateRequest,
   deleteRequest,
 };

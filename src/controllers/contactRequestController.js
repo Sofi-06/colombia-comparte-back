@@ -27,6 +27,26 @@ const createPublicRequest = async (req, res) => {
   }
 };
 
+const getRequestById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const request = await contactRequestService.getRequestById(id, req.user);
+
+    return res.status(200).json(request);
+  } catch (error) {
+    if (error.message.includes('permisos')) {
+      return res.status(403).json({
+        message: error.message,
+      });
+    }
+
+    return res.status(404).json({
+      message: error.message,
+    });
+  }
+};
+
 const updateRequestStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -42,6 +62,29 @@ const updateRequestStatus = async (req, res) => {
       data: request,
     });
   } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+
+const updateRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const request = await contactRequestService.updateRequest(id, req.body, req.user);
+
+    return res.status(200).json({
+      message: 'Solicitud actualizada correctamente',
+      data: request,
+    });
+  } catch (error) {
+    if (error.message.includes('permisos')) {
+      return res.status(403).json({
+        message: error.message,
+      });
+    }
+
     return res.status(400).json({
       message: error.message,
     });
@@ -65,6 +108,8 @@ const deleteRequest = async (req, res) => {
 module.exports = {
   listRequests,
   createPublicRequest,
+  getRequestById,
   updateRequestStatus,
+  updateRequest,
   deleteRequest,
 };
