@@ -11,6 +11,7 @@ const countryRoutes = require('./routes/countryRoutes');
 const newsRoutes = require('./routes/newsRoutes');
 const testimonialRoutes = require('./routes/testimonialRoutes');
 const contactRequestRoutes = require('./routes/contactRequestRoutes');
+const archivoRoutes = require('./routes/archivoRoutes');
 const metricsRoutes = require('./routes/metricsRoutes');
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/countries', countryRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/contact-requests', contactRequestRoutes);
+app.use('/api/archivos', archivoRoutes);
 app.use('/api/metrics', metricsRoutes);
 
 app.use((error, req, res, next) => {

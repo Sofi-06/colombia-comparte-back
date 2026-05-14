@@ -28,7 +28,7 @@ const listPublicTestimonials = async (req, res) => {
 
 const createTestimonial = async (req, res) => {
   try {
-    const testimonial = await testimonialService.createTestimonial(req.body, req.user);
+    const testimonial = await testimonialService.createTestimonial(req.body, req.user, req.ip);
 
     return res.status(201).json({
       message: 'Testimonio creado correctamente',
@@ -48,7 +48,8 @@ const updateTestimonial = async (req, res) => {
     const testimonial = await testimonialService.updateTestimonial(
       id,
       req.body,
-      req.user
+      req.user,
+      req.ip
     );
 
     return res.status(200).json({
@@ -66,7 +67,7 @@ const deleteTestimonial = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await testimonialService.deleteTestimonial(id, req.user);
+    const result = await testimonialService.deleteTestimonial(id, req.user, req.ip);
 
     return res.status(200).json(result);
   } catch (error) {
@@ -114,7 +115,7 @@ const changeTestimonialStatus = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const testimonial = await testimonialService.changeTestimonialStatus(id, req.body, req.user);
+    const testimonial = await testimonialService.changeTestimonialStatus(id, req.body, req.user, req.ip);
 
     return res.status(200).json({
       message: 'Estado del testimonio actualizado correctamente',

@@ -54,7 +54,8 @@ const updateRequestStatus = async (req, res) => {
     const request = await contactRequestService.updateRequestStatus(
       id,
       req.body,
-      req.user
+      req.user,
+      req.ip
     );
 
     return res.status(200).json({
@@ -72,7 +73,7 @@ const updateRequest = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const request = await contactRequestService.updateRequest(id, req.body, req.user);
+    const request = await contactRequestService.updateRequest(id, req.body, req.user, req.ip);
 
     return res.status(200).json({
       message: 'Solicitud actualizada correctamente',
@@ -95,7 +96,7 @@ const deleteRequest = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await contactRequestService.deleteRequest(id, req.user);
+    const result = await contactRequestService.deleteRequest(id, req.user, req.ip);
 
     return res.status(200).json(result);
   } catch (error) {

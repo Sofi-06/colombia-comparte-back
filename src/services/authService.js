@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authRepository = require('../repositories/authRepository');
+const auditService = require('./auditService');
 
-const login = async ({ username, password }) => {
+const login = async ({ username, password }, ip) => {
   if (!username || !password) {
     throw new Error('El usuario y la contraseña son obligatorios');
   }
@@ -24,6 +25,15 @@ const login = async ({ username, password }) => {
   }
 
   await authRepository.updateLastAccess(user.id);
+
+  await auditService.recordAction({
+    user,
+    action: 'INICIO_SESION',
+    module: 'auth',
+    recordId: user.id,
+    description: `Inicio de sesión exitoso de ${user.username}`,
+    ip,
+  });
 
   const rol = user.roles?.nombre;
   const pais = user.paises || null;
@@ -110,12 +120,12 @@ const resetPassword = async ({ username, respuesta_seguridad, nueva_password }) 
   };
 };
 
-const changePassword = async (userId, { password_actual, nueva_password }) => {
+const changePassword = async (userContext, { password_actual, nueva_password }, ip) => {
   if (!password_actual || !nueva_password) {
     throw new Error('password_actual y nueva_password son obligatorios');
   }
 
-  const user = await authRepository.findUserById(userId);
+  const user = await authRepository.findUserById(userContext.id);
 
   if (!user) {
     throw new Error('Usuario no encontrado');
@@ -131,22 +141,42 @@ const changePassword = async (userId, { password_actual, nueva_password }) => {
 
   await authRepository.updatePassword(user.id, password_hash);
 
+  await auditService.recordAction({
+    user: userContext,
+    action: 'CAMBIAR_CONTRASENA',
+    module: 'auth',
+    recordId: user.id,
+    description: 'Contraseña actualizada por el propio usuario',
+    ip,
+  });
+
   return {
     message: 'Contraseña actualizada correctamente',
   };
 };
 
-const updateSecurityQuestion = async (userId, { pregunta_seguridad, respuesta_seguridad }) => {
+const updateSecurityQuestion = async (userContext, { pregunta_seguridad, respuesta_seguridad }, ip) => {
   if (!pregunta_seguridad || !respuesta_seguridad) {
     throw new Error('pregunta_seguridad y respuesta_seguridad son obligatorios');
   }
 
   const respuesta_seguridad_hash = bcrypt.hashSync(respuesta_seguridad, 10);
 
-  return await authRepository.updateSecurityQuestion(userId, {
+  const result = await authRepository.updateSecurityQuestion(userContext.id, {
     pregunta_seguridad,
     respuesta_seguridad_hash,
   });
+
+  await auditService.recordAction({
+    user: userContext,
+    action: 'CAMBIAR_PREGUNTA_SEGURIDAD',
+    module: 'auth',
+    recordId: userContext.id,
+    description: 'Pregunta de seguridad actualizada',
+    ip,
+  });
+
+  return result;
 };
 
 module.exports = {

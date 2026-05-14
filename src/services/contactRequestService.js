@@ -1,4 +1,5 @@
 const contactRequestRepository = require('../repositories/contactRequestRepository');
+const auditService = require('./auditService');
 
 const ALLOWED_PURPOSES = ['Servicio', 'Programa EDIFICA', 'Shows y conferencias'];
 const ALLOWED_STATES = ['pendiente', 'en_proceso', 'gestionada', 'cerrada'];
@@ -85,7 +86,7 @@ const getRequestById = async (id, user) => {
   return existingRequest;
 };
 
-const updateRequestStatus = async (id, payload, user) => {
+const updateRequestStatus = async (id, payload, user, ip) => {
   const existingRequest = await contactRequestRepository.findRequestById(id);
 
   if (!existingRequest) {
@@ -116,10 +117,21 @@ const updateRequestStatus = async (id, payload, user) => {
     updatePayload.fecha_gestion = new Date().toISOString();
   }
 
-  return await contactRequestRepository.updateRequest(id, updatePayload);
+  const request = await contactRequestRepository.updateRequest(id, updatePayload);
+
+  await auditService.recordAction({
+    user,
+    action: 'CAMBIAR_ESTADO_SOLICITUD',
+    module: 'solicitudes_contacto',
+    recordId: request.id,
+    description: `Solicitud cambiada a ${request.estado}`,
+    ip,
+  });
+
+  return request;
 };
 
-const updateRequest = async (id, payload, user) => {
+const updateRequest = async (id, payload, user, ip) => {
   const existingRequest = await contactRequestRepository.findRequestById(id);
 
   if (!existingRequest) {
@@ -170,10 +182,21 @@ const updateRequest = async (id, payload, user) => {
 
   updatePayload.updated_at = new Date().toISOString();
 
-  return await contactRequestRepository.updateRequest(id, updatePayload);
+  const request = await contactRequestRepository.updateRequest(id, updatePayload);
+
+  await auditService.recordAction({
+    user,
+    action: 'ACTUALIZAR_SOLICITUD',
+    module: 'solicitudes_contacto',
+    recordId: request.id,
+    description: `Solicitud de ${request.nombre} actualizada`,
+    ip,
+  });
+
+  return request;
 };
 
-const deleteRequest = async (id, user) => {
+const deleteRequest = async (id, user, ip) => {
   const existingRequest = await contactRequestRepository.findRequestById(id);
 
   if (!existingRequest) {
@@ -192,6 +215,15 @@ const deleteRequest = async (id, user) => {
   }
 
   await contactRequestRepository.deleteRequest(id);
+
+  await auditService.recordAction({
+    user,
+    action: 'ELIMINAR_SOLICITUD',
+    module: 'solicitudes_contacto',
+    recordId: existingRequest.id,
+    description: `Solicitud de ${existingRequest.nombre} eliminada`,
+    ip,
+  });
 
   return {
     message: 'Solicitud eliminada correctamente',

@@ -1,4 +1,5 @@
 const newsRepository = require('../repositories/newsRepository');
+const auditService = require('./auditService');
 
 const generateSlug = (text) => {
   return text
@@ -74,7 +75,7 @@ const getNewsDetail = async (id, user) => {
   return news;
 };
 
-const createNews = async (payload, user) => {
+const createNews = async (payload, user, ip) => {
   const {
     titulo,
     resumen,
@@ -105,7 +106,7 @@ const createNews = async (payload, user) => {
 
   const slug = generateSlug(titulo);
 
-  return await newsRepository.createNews({
+  const news = await newsRepository.createNews({
     pais_id: finalPaisId,
     titulo,
     slug,
@@ -116,9 +117,20 @@ const createNews = async (payload, user) => {
     estado: finalEstado,
     fecha_publicacion,
   });
+
+  await auditService.recordAction({
+    user,
+    action: 'CREAR_NOTICIA',
+    module: 'noticias',
+    recordId: news.id,
+    description: `Noticia ${news.titulo} creada`,
+    ip,
+  });
+
+  return news;
 };
 
-const updateNews = async (id, payload, user) => {
+const updateNews = async (id, payload, user, ip) => {
   const existingNews = await newsRepository.findNewsById(id);
 
   if (!existingNews) {
@@ -167,10 +179,21 @@ const updateNews = async (id, payload, user) => {
 
   updatePayload.updated_at = new Date().toISOString();
 
-  return await newsRepository.updateNews(id, updatePayload);
+  const news = await newsRepository.updateNews(id, updatePayload);
+
+  await auditService.recordAction({
+    user,
+    action: 'ACTUALIZAR_NOTICIA',
+    module: 'noticias',
+    recordId: news.id,
+    description: `Noticia ${news.titulo} actualizada`,
+    ip,
+  });
+
+  return news;
 };
 
-const changeNewsStatus = async (id, payload, user) => {
+const changeNewsStatus = async (id, payload, user, ip) => {
   const existingNews = await newsRepository.findNewsById(id);
 
   if (!existingNews) {
@@ -211,10 +234,21 @@ const changeNewsStatus = async (id, payload, user) => {
     updatePayload.fecha_publicacion = null;
   }
 
-  return await newsRepository.updateNewsStatus(id, updatePayload);
+  const news = await newsRepository.updateNewsStatus(id, updatePayload);
+
+  await auditService.recordAction({
+    user,
+    action: 'CAMBIAR_ESTADO_NOTICIA',
+    module: 'noticias',
+    recordId: news.id,
+    description: `Estado de la noticia cambiado a ${news.estado}`,
+    ip,
+  });
+
+  return news;
 };
 
-const deleteNews = async (id, user) => {
+const deleteNews = async (id, user, ip) => {
   const existingNews = await newsRepository.findNewsById(id);
 
   if (!existingNews) {
@@ -233,6 +267,15 @@ const deleteNews = async (id, user) => {
   }
 
   await newsRepository.deleteNews(id);
+
+  await auditService.recordAction({
+    user,
+    action: 'ELIMINAR_NOTICIA',
+    module: 'noticias',
+    recordId: existingNews.id,
+    description: `Noticia ${existingNews.titulo} eliminada`,
+    ip,
+  });
 
   return {
     message: 'Noticia eliminada correctamente',

@@ -14,7 +14,7 @@ const listUsers = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const user = await userService.createUser(req.body);
+    const user = await userService.createUser(req.body, req.user, req.ip);
 
     return res.status(201).json({
       message: 'Usuario creado correctamente',
@@ -30,7 +30,7 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await userService.updateUser(id, req.body);
+    const user = await userService.updateUser(id, req.body, req.user, req.ip);
 
     return res.status(200).json({
       message: 'Usuario actualizado correctamente',
@@ -46,7 +46,7 @@ const updateUser = async (req, res) => {
 const changeUserPassword = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await userService.changeUserPassword(id, req.body);
+    const result = await userService.changeUserPassword(id, req.body, req.user, req.ip);
 
     return res.status(200).json({
       message: 'Contraseña actualizada correctamente',
@@ -62,7 +62,7 @@ const changeUserPassword = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    await userService.deleteUser(id);
+    await userService.deleteUser(id, req.user, req.ip);
 
     return res.status(200).json({
       message: 'Usuario eliminado correctamente',

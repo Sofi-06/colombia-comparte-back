@@ -2,7 +2,7 @@ const authService = require('../services/authService');
 
 const login = async (req, res) => {
   try {
-    const result = await authService.login(req.body);
+    const result = await authService.login(req.body, req.ip);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(400).json({
@@ -37,7 +37,7 @@ const resetPassword = async (req, res) => {
 
 const changePassword = async (req, res) => {
   try {
-    const result = await authService.changePassword(req.user.id, req.body);
+    const result = await authService.changePassword(req.user, req.body, req.ip);
 
     return res.status(200).json(result);
   } catch (error) {
@@ -49,7 +49,7 @@ const changePassword = async (req, res) => {
 
 const updateSecurityQuestion = async (req, res) => {
   try {
-    const result = await authService.updateSecurityQuestion(req.user.id, req.body);
+    const result = await authService.updateSecurityQuestion(req.user, req.body, req.ip);
 
     return res.status(200).json({
       message: 'Pregunta de seguridad actualizada correctamente',

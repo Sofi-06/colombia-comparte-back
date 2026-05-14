@@ -1,4 +1,5 @@
 const testimonialRepository = require('../repositories/testimonialRepository');
+const auditService = require('./auditService');
 
 const getTestimonials = async (user) => {
   if (user.rol === 'superadmin') {
@@ -16,13 +17,14 @@ const getPublicTestimonialsByCountry = async (countrySlug) => {
   return await testimonialRepository.findPublishedTestimonialsByCountrySlug(countrySlug);
 };
 
-const createTestimonial = async (payload, user) => {
+const createTestimonial = async (payload, user, ip) => {
   const {
     nombre,
     cargo,
     empresa,
     contenido,
     foto_url,
+    video_url,
     instagram_url,
     facebook_url,
     estado = 'borrador',
@@ -49,13 +51,14 @@ const createTestimonial = async (payload, user) => {
   const fecha_publicacion =
     finalEstado === 'publicado' ? new Date().toISOString() : null;
 
-  return await testimonialRepository.createTestimonial({
+  const testimonial = await testimonialRepository.createTestimonial({
     pais_id: finalPaisId,
     nombre,
     cargo: cargo || null,
     empresa: empresa || null,
     contenido,
     foto_url,
+    video_url: video_url || null,
     instagram_url: instagram_url || null,
     facebook_url: facebook_url || null,
     estado: finalEstado,
@@ -63,9 +66,20 @@ const createTestimonial = async (payload, user) => {
     autor_id: user.id,
     fecha_publicacion,
   });
+
+  await auditService.recordAction({
+    user,
+    action: 'CREAR_TESTIMONIO',
+    module: 'testimonios',
+    recordId: testimonial.id,
+    description: `Testimonio ${testimonial.nombre} creado`,
+    ip,
+  });
+
+  return testimonial;
 };
 
-const updateTestimonial = async (id, payload, user) => {
+const updateTestimonial = async (id, payload, user, ip) => {
   const existingTestimonial = await testimonialRepository.findTestimonialById(id);
 
   if (!existingTestimonial) {
@@ -86,6 +100,7 @@ const updateTestimonial = async (id, payload, user) => {
     'empresa',
     'contenido',
     'foto_url',
+    'video_url',
     'instagram_url',
     'facebook_url',
     'estado',
@@ -116,7 +131,18 @@ const updateTestimonial = async (id, payload, user) => {
   }
 
   updatePayload.updated_at = new Date().toISOString();
-  return await testimonialRepository.updateTestimonial(id, updatePayload);
+  const testimonial = await testimonialRepository.updateTestimonial(id, updatePayload);
+
+  await auditService.recordAction({
+    user,
+    action: 'ACTUALIZAR_TESTIMONIO',
+    module: 'testimonios',
+    recordId: testimonial.id,
+    description: `Testimonio ${testimonial.nombre} actualizado`,
+    ip,
+  });
+
+  return testimonial;
 };
 
 const getTestimonialDetail = async (id, user) => {
@@ -153,7 +179,7 @@ const getPublicTestimonialDetail = async (countrySlug, testimonialSlug) => {
   return testimonial;
 };
 
-const changeTestimonialStatus = async (id, payload, user) => {
+const changeTestimonialStatus = async (id, payload, user, ip) => {
   const existingTestimonial = await testimonialRepository.findTestimonialById(id);
 
   if (!existingTestimonial) {
@@ -194,10 +220,21 @@ const changeTestimonialStatus = async (id, payload, user) => {
     updatePayload.fecha_publicacion = null;
   }
 
-  return await testimonialRepository.updateTestimonialStatus(id, updatePayload);
+  const testimonial = await testimonialRepository.updateTestimonialStatus(id, updatePayload);
+
+  await auditService.recordAction({
+    user,
+    action: 'CAMBIAR_ESTADO_TESTIMONIO',
+    module: 'testimonios',
+    recordId: testimonial.id,
+    description: `Estado del testimonio cambiado a ${testimonial.estado}`,
+    ip,
+  });
+
+  return testimonial;
 };
 
-const deleteTestimonial = async (id, user) => {
+const deleteTestimonial = async (id, user, ip) => {
   const existingTestimonial = await testimonialRepository.findTestimonialById(id);
 
   if (!existingTestimonial) {
@@ -216,6 +253,15 @@ const deleteTestimonial = async (id, user) => {
   }
 
   await testimonialRepository.deleteTestimonial(id);
+
+  await auditService.recordAction({
+    user,
+    action: 'ELIMINAR_TESTIMONIO',
+    module: 'testimonios',
+    recordId: existingTestimonial.id,
+    description: `Testimonio ${existingTestimonial.nombre} eliminado`,
+    ip,
+  });
 
   return {
     message: 'Testimonio eliminado correctamente',

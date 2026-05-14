@@ -1,11 +1,12 @@
 const bcrypt = require('bcryptjs');
 const userRepository = require('../repositories/userRepository');
+const auditService = require('./auditService');
 
 const getUsers = async () => {
   return await userRepository.findAllUsers();
 };
 
-const createUser = async (payload) => {
+const createUser = async (payload, actor, ip) => {
   const {
     nombre,
     apellido,
@@ -45,10 +46,21 @@ const createUser = async (payload) => {
     userPayload.respuesta_seguridad_hash = bcrypt.hashSync(respuesta_seguridad, 10);
   }
 
-  return await userRepository.createUser(userPayload);
+  const createdUser = await userRepository.createUser(userPayload);
+
+  await auditService.recordAction({
+    user: actor,
+    action: 'CREAR_USUARIO',
+    module: 'usuarios',
+    recordId: createdUser.id,
+    description: `Usuario ${createdUser.username} creado`,
+    ip,
+  });
+
+  return createdUser;
 };
 
-const updateUser = async (id, payload) => {
+const updateUser = async (id, payload, actor, ip) => {
   if (payload.password) {
     payload.password_hash = bcrypt.hashSync(payload.password, 10);
     delete payload.password;
@@ -59,10 +71,21 @@ const updateUser = async (id, payload) => {
     delete payload.respuesta_seguridad;
   }
 
-  return await userRepository.updateUser(id, payload);
+  const updatedUser = await userRepository.updateUser(id, payload);
+
+  await auditService.recordAction({
+    user: actor,
+    action: 'ACTUALIZAR_USUARIO',
+    module: 'usuarios',
+    recordId: updatedUser.id,
+    description: `Usuario ${updatedUser.username} actualizado`,
+    ip,
+  });
+
+  return updatedUser;
 };
 
-const changeUserPassword = async (id, { nueva_password }) => {
+const changeUserPassword = async (id, { nueva_password }, actor, ip) => {
   if (!nueva_password) {
     throw new Error('nueva_password es obligatoria');
   }
@@ -75,11 +98,33 @@ const changeUserPassword = async (id, { nueva_password }) => {
 
   const password_hash = bcrypt.hashSync(nueva_password, 10);
 
-  return await userRepository.updateUserPassword(id, password_hash);
+  const result = await userRepository.updateUserPassword(id, password_hash);
+
+  await auditService.recordAction({
+    user: actor,
+    action: 'CAMBIAR_PASSWORD_USUARIO',
+    module: 'usuarios',
+    recordId: result.id,
+    description: `Contraseña actualizada para ${result.username}`,
+    ip,
+  });
+
+  return result;
 };
 
-const deleteUser = async (id) => {
-  return await userRepository.deleteUser(id);
+const deleteUser = async (id, actor, ip) => {
+  const deletedUser = await userRepository.deleteUser(id);
+
+  await auditService.recordAction({
+    user: actor,
+    action: 'ELIMINAR_USUARIO',
+    module: 'usuarios',
+    recordId: deletedUser.id,
+    description: `Usuario ${deletedUser.username} eliminado`,
+    ip,
+  });
+
+  return deletedUser;
 };
 
 module.exports = {

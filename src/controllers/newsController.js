@@ -62,7 +62,7 @@ const getPublicNewsDetail = async (req, res) => {
 
 const createNews = async (req, res) => {
   try {
-    const news = await newsService.createNews(req.body, req.user);
+    const news = await newsService.createNews(req.body, req.user, req.ip);
 
     return res.status(201).json({
       message: 'Noticia creada correctamente',
@@ -79,7 +79,7 @@ const updateNews = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const news = await newsService.updateNews(id, req.body, req.user);
+    const news = await newsService.updateNews(id, req.body, req.user, req.ip);
 
     return res.status(200).json({
       message: 'Noticia actualizada correctamente',
@@ -96,7 +96,7 @@ const changeNewsStatus = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const news = await newsService.changeNewsStatus(id, req.body, req.user);
+    const news = await newsService.changeNewsStatus(id, req.body, req.user, req.ip);
 
     return res.status(200).json({
       message: 'Estado de la noticia actualizado correctamente',
@@ -118,7 +118,7 @@ const deleteNews = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await newsService.deleteNews(id, req.user);
+    const result = await newsService.deleteNews(id, req.user, req.ip);
 
     return res.status(200).json(result);
   } catch (error) {
