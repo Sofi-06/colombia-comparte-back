@@ -80,6 +80,7 @@ const updateTestimonial = async (id, payload, user) => {
   }
 
   const allowedFields = [
+    'pais_id',
     'nombre',
     'cargo',
     'empresa',
@@ -99,6 +100,10 @@ const updateTestimonial = async (id, payload, user) => {
     }
   });
 
+  if (user.rol !== 'superadmin') {
+    delete updatePayload.pais_id;
+  }
+
   if (
     payload.estado === 'publicado' &&
     existingTestimonial.estado !== 'publicado'
@@ -111,8 +116,85 @@ const updateTestimonial = async (id, payload, user) => {
   }
 
   updatePayload.updated_at = new Date().toISOString();
-
   return await testimonialRepository.updateTestimonial(id, updatePayload);
+};
+
+const getTestimonialDetail = async (id, user) => {
+  const testimonial = await testimonialRepository.findTestimonialById(id);
+
+  if (!testimonial) {
+    throw new Error('El testimonio no existe');
+  }
+
+  if (
+    user.rol !== 'superadmin' &&
+    Number(testimonial.pais_id) !== Number(user.pais_id)
+  ) {
+    throw new Error('No tiene permisos para ver este testimonio');
+  }
+
+  return testimonial;
+};
+
+const getPublicTestimonialDetail = async (countrySlug, testimonialSlug) => {
+  if (!countrySlug || !testimonialSlug) {
+    throw new Error('El país y el slug del testimonio son obligatorios');
+  }
+
+  const testimonial = await testimonialRepository.findPublishedTestimonialDetailByCountryAndSlug(
+    countrySlug,
+    testimonialSlug
+  );
+
+  if (!testimonial) {
+    throw new Error('Testimonio no encontrado');
+  }
+
+  return testimonial;
+};
+
+const changeTestimonialStatus = async (id, payload, user) => {
+  const existingTestimonial = await testimonialRepository.findTestimonialById(id);
+
+  if (!existingTestimonial) {
+    throw new Error('El testimonio no existe');
+  }
+
+  if (
+    user.rol !== 'superadmin' &&
+    Number(existingTestimonial.pais_id) !== Number(user.pais_id)
+  ) {
+    throw new Error('No tiene permisos para cambiar el estado de este testimonio');
+  }
+
+  if (user.rol === 'editor' && payload.estado === 'despublicado') {
+    throw new Error('El editor no tiene permisos para despublicar testimonios');
+  }
+
+  const estado = payload.estado ?? payload.status;
+
+  if (!estado) {
+    throw new Error('El estado es obligatorio');
+  }
+
+  if (!['borrador', 'publicado', 'despublicado'].includes(estado)) {
+    throw new Error('Estado no válido');
+  }
+
+  const updatePayload = {
+    estado,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (estado === 'publicado' && existingTestimonial.estado !== 'publicado') {
+    updatePayload.fecha_publicacion = new Date().toISOString();
+  }
+
+  if (estado !== 'publicado') {
+    updatePayload.fecha_publicacion = null;
+  }
+
+  return await testimonialRepository.updateTestimonialStatus(id, updatePayload);
 };
 
 const deleteTestimonial = async (id, user) => {
@@ -146,4 +228,7 @@ module.exports = {
   createTestimonial,
   updateTestimonial,
   deleteTestimonial,
+  getTestimonialDetail,
+  getPublicTestimonialDetail,
+  changeTestimonialStatus,
 };

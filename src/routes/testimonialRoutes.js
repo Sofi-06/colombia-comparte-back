@@ -14,6 +14,11 @@ router.get(
   testimonialController.listPublicTestimonials
 );
 
+router.get(
+  '/public/:countrySlug/:testimonialSlug',
+  testimonialController.getPublicTestimonialDetail
+);
+
 /*
   RUTAS ADMINISTRATIVAS
 */
@@ -23,6 +28,13 @@ router.get(
   verifyToken,
   authorizeRoles('superadmin', 'admin_pais', 'editor'),
   testimonialController.listTestimonials
+);
+
+router.get(
+  '/:id',
+  verifyToken,
+  authorizeRoles('superadmin', 'admin_pais', 'editor'),
+  testimonialController.getTestimonialById
 );
 
 router.post(
@@ -37,6 +49,13 @@ router.put(
   verifyToken,
   authorizeRoles('superadmin', 'admin_pais', 'editor'),
   testimonialController.updateTestimonial
+);
+
+router.patch(
+  '/:id/estado',
+  verifyToken,
+  authorizeRoles('superadmin', 'admin_pais', 'editor'),
+  testimonialController.changeTestimonialStatus
 );
 
 router.delete(
