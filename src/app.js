@@ -11,6 +11,7 @@ const countryRoutes = require('./routes/countryRoutes');
 const newsRoutes = require('./routes/newsRoutes');
 const testimonialRoutes = require('./routes/testimonialRoutes');
 const contactRequestRoutes = require('./routes/contactRequestRoutes');
+const metricsRoutes = require('./routes/metricsRoutes');
 
 const app = express();
 const REQUEST_BODY_LIMIT = process.env.REQUEST_BODY_LIMIT || '15mb';
@@ -36,6 +37,7 @@ app.use('/api/countries', countryRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/contact-requests', contactRequestRoutes);
+app.use('/api/metrics', metricsRoutes);
 
 app.use((error, req, res, next) => {
   if (error?.type === 'entity.too.large') {
