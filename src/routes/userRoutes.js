@@ -26,6 +26,13 @@ router.patch(
   userController.updateUser
 );
 
+router.put(
+  '/:id/password',
+  verifyToken,
+  authorizeRoles('superadmin'),
+  userController.changeUserPassword
+);
+
 router.delete(
   '/:id',
   verifyToken,

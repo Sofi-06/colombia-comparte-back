@@ -14,6 +14,8 @@ const createUser = async (payload) => {
     password,
     rol_id,
     pais_id,
+    pregunta_seguridad,
+    respuesta_seguridad,
   } = payload;
 
   if (!nombre || !apellido || !email || !username || !password || !rol_id) {
@@ -27,8 +29,7 @@ const createUser = async (payload) => {
   }
 
   const password_hash = bcrypt.hashSync(password, 10);
-
-  return await userRepository.createUser({
+  const userPayload = {
     nombre,
     apellido,
     email,
@@ -37,7 +38,14 @@ const createUser = async (payload) => {
     rol_id,
     pais_id: pais_id || null,
     estado: 'activo',
-  });
+  };
+
+  if (pregunta_seguridad && respuesta_seguridad) {
+    userPayload.pregunta_seguridad = pregunta_seguridad;
+    userPayload.respuesta_seguridad_hash = bcrypt.hashSync(respuesta_seguridad, 10);
+  }
+
+  return await userRepository.createUser(userPayload);
 };
 
 const updateUser = async (id, payload) => {
@@ -45,7 +53,29 @@ const updateUser = async (id, payload) => {
     payload.password_hash = bcrypt.hashSync(payload.password, 10);
     delete payload.password;
   }
+
+  if (payload.respuesta_seguridad) {
+    payload.respuesta_seguridad_hash = bcrypt.hashSync(payload.respuesta_seguridad, 10);
+    delete payload.respuesta_seguridad;
+  }
+
   return await userRepository.updateUser(id, payload);
+};
+
+const changeUserPassword = async (id, { nueva_password }) => {
+  if (!nueva_password) {
+    throw new Error('nueva_password es obligatoria');
+  }
+
+  const user = await userRepository.findUserById(id);
+
+  if (!user) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  const password_hash = bcrypt.hashSync(nueva_password, 10);
+
+  return await userRepository.updateUserPassword(id, password_hash);
 };
 
 const deleteUser = async (id) => {
@@ -56,5 +86,6 @@ module.exports = {
   getUsers,
   createUser,
   updateUser,
+  changeUserPassword,
   deleteUser,
 };

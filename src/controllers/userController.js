@@ -43,6 +43,22 @@ const updateUser = async (req, res) => {
   }
 };
 
+const changeUserPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await userService.changeUserPassword(id, req.body);
+
+    return res.status(200).json({
+      message: 'Contraseña actualizada correctamente',
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -62,5 +78,6 @@ module.exports = {
   listUsers,
   createUser,
   updateUser,
+  changeUserPassword,
   deleteUser,
 };
