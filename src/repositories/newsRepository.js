@@ -112,6 +112,7 @@ const findPublishedNewsByCountrySlug = async (countrySlug) => {
       titulo,
       slug,
       resumen,
+      contenido,
       imagen_principal_url,
       fecha_publicacion,
       paises!inner (
