@@ -67,6 +67,82 @@
             },
             "url": "{{baseUrl}}/api/auth/login"
           }
+        },
+        {
+          "name": "🔑 Forgot Password - Obtener pregunta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"superadmin\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/forgot-password"
+          }
+        },
+        {
+          "name": "🔄 Reset Password - Restaurar contraseña",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"superadmin\",\n  \"respuesta_seguridad\": \"cms2026\",\n  \"nueva_password\": \"123456789\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/reset-password"
+          }
+        },
+        {
+          "name": "🔐 Change Password - Cambiar contraseña propia",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password_actual\": \"123456\",\n  \"nueva_password\": \"123456789\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/change-password"
+          }
+        },
+        {
+          "name": "❓ Update Security Question - Cambiar pregunta de seguridad",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pregunta_seguridad\": \"¿Cuál es tu ciudad favorita?\",\n  \"respuesta_seguridad\": \"Tunja\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/security-question"
+          }
         }
       ]
     },
@@ -138,7 +214,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Perez\",\n  \"email\": \"juan.perez@cms.com\",\n  \"username\": \"juanperez\",\n  \"password\": \"MiPasswordSeguro123\",\n  \"rol_id\": 2,\n  \"pais_id\": 1\n}"
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Perez\",\n  \"email\": \"juan.perez@cms.com\",\n  \"username\": \"juanperez\",\n  \"password\": \"MiPasswordSeguro123\",\n  \"rol_id\": 2,\n  \"pais_id\": 1,\n  \"pregunta_seguridad\": \"¿Cuál es tu mascota favorita?\",\n  \"respuesta_seguridad\": \"Gato\"\n}"
             },
             "url": "{{baseUrl}}/api/users/"
           }
@@ -159,9 +235,30 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan Actualizado\",\n  \"apellido\": \"Perez Actualizado\",\n  \"email\": \"juan.nuevo@cms.com\",\n  \"username\": \"juanperez_mod\",\n  \"password\": \"NuevoPassword123\",\n  \"rol_id\": 1,\n  \"pais_id\": 2,\n  \"estado\": \"inactivo\"\n}"
+              "raw": "{\n  \"nombre\": \"Juan Actualizado\",\n  \"apellido\": \"Perez Actualizado\",\n  \"email\": \"juan.nuevo@cms.com\",\n  \"username\": \"juanperez_mod\",\n  \"password\": \"NuevoPassword123\",\n  \"rol_id\": 1,\n  \"pais_id\": 2,\n  \"estado\": \"inactivo\",\n  \"pregunta_seguridad\": \"¿Cuál es tu mascota favorita?\",\n  \"respuesta_seguridad\": \"Perro\"\n}"
             },
             "url": "{{baseUrl}}/api/users/2"
+          }
+        },
+        {
+          "name": "🔐 Change User Password - Superadmin cambia contraseña",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nueva_password\": \"123456\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/2/password"
           }
         },
         {

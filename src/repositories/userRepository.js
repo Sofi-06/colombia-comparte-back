@@ -10,6 +10,7 @@ const findAllUsers = async () => {
       email,
       username,
       estado,
+      pregunta_seguridad,
       created_at,
       roles (
         id,
@@ -76,6 +77,7 @@ const createUser = async (payload) => {
       email,
       username,
       estado,
+      pregunta_seguridad,
       created_at
     `)
     .single();
@@ -97,6 +99,7 @@ const updateUser = async (id, payload) => {
       email,
       username,
       estado,
+      pregunta_seguridad,
       created_at
     `)
     .single();
