@@ -13,6 +13,7 @@ const testimonialRoutes = require('./routes/testimonialRoutes');
 const contactRequestRoutes = require('./routes/contactRequestRoutes');
 const archivoRoutes = require('./routes/archivoRoutes');
 const metricsRoutes = require('./routes/metricsRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 const REQUEST_BODY_LIMIT = process.env.REQUEST_BODY_LIMIT || '15mb';
@@ -40,6 +41,7 @@ app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/contact-requests', contactRequestRoutes);
 app.use('/api/archivos', archivoRoutes);
 app.use('/api/metrics', metricsRoutes);
+app.use('/api/audits', auditRoutes);
 
 app.use((error, req, res, next) => {
   if (error?.type === 'entity.too.large') {
