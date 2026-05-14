@@ -293,6 +293,74 @@
           }
         },
         {
+          "name": "🔎 Get Country by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/countries/{{id}}"
+          }
+        },
+        {
+          "name": "➕ Create Country",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Colombia\",\n  \"codigo\": \"CO\",\n  \"slug\": \"colombia\",\n  \"estado\": \"activo\"\n}"
+            },
+            "url": "{{baseUrl}}/api/countries/"
+          }
+        },
+        {
+          "name": "✏️ Update Country",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Colombia Actualizado\",\n  \"codigo\": \"CO\",\n  \"slug\": \"colombia-updated\",\n  \"estado\": \"activo\"\n}"
+            },
+            "url": "{{baseUrl}}/api/countries/1"
+          }
+        },
+        {
+          "name": "🗑️ Delete Country",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/countries/1"
+          }
+        },
+        {
           "name": "🌍 List Active Countries",
           "request": {
             "method": "GET",

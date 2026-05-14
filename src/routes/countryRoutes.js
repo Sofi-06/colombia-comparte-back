@@ -19,4 +19,32 @@ router.get(
   countryController.listActiveCountries
 );
 
+router.get(
+  '/:id',
+  verifyToken,
+  authorizeRoles('superadmin'),
+  countryController.getCountry
+);
+
+router.post(
+  '/',
+  verifyToken,
+  authorizeRoles('superadmin'),
+  countryController.createCountry
+);
+
+router.patch(
+  '/:id',
+  verifyToken,
+  authorizeRoles('superadmin'),
+  countryController.updateCountry
+);
+
+router.delete(
+  '/:id',
+  verifyToken,
+  authorizeRoles('superadmin'),
+  countryController.deleteCountry
+);
+
 module.exports = router;
